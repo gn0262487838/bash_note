@@ -32,20 +32,25 @@ fi
 containerID=$1
 folderName=$2
 minute_=$3
+# 查看所有參數
 echo "containerID folderName minute_ : $@"
 
 
 # zip folder
 value_=0
 echo "test copy.sh..."
+# -f(file) -d(dir)
 test -f /mnt/kaldi_models/copy.sh && value_=1 || echo "missing /mnt/kaldi_models/copy.sh"
 
 if [ $value_ = 1 ]
 then
     echo "zipping...audio, sql and upload file"
-    docker exec -it $containerID /bin/bash -c "sh /opt/models/copy.sh $folderName $minute_" && zip -r -m /mnt/$folderName.zip /mnt/kaldi_models/$folderName/*
+    docker exec -it $containerID /bin/bash -c "sh /opt/models/copy.sh $folderName $minute_" && \
+    zip -r -m /mnt/$folderName.zip /mnt/kaldi_models/$folderName/*
+    # -r(recursion) -m(壓縮完後刪除壓縮源)
     rm -r /mnt/kaldi_models/$folderName/
     zip -r /mnt/sql.zip /mnt/Kingcolon/server/sql/*
+    # -cf(打包) -xf(解包)
     tar -cf /mnt/upload.tar /mnt/Kingcolon/server/public/upload/*
     echo "zip completed"
     exit 0
