@@ -44,10 +44,11 @@ test -f /mnt/kaldi_models/copy.sh && value_=1 || echo "missing /mnt/kaldi_models
 
 if [ $value_ = 1 ]
 then
-    echo "zipping...audio, sql and upload file"
+    echo "zipping...audio and tarring upload file"
     docker exec -it $containerID /bin/bash -c "sh /opt/models/copy.sh $folderName $minute_" && zip -r -m /mnt/$folderName.zip /mnt/kaldi_models/$folderName/*
     rm -r /mnt/kaldi_models/$folderName/
     tar -cf /mnt/upload.tar /mnt/Kingcolon/server/public/upload/*
+    echo "export sql file... "
     mysqldump -uroot -p src_ai > /mnt/src_ai_bk_$today.sql
     echo "All processing completed"
     exit 0
