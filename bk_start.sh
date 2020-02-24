@@ -1,6 +1,7 @@
 #!/bin/bash
 # program:
-#         寫一個可以不用進docker就可以直接撈取音檔,音檔log和音檔時間註記
+#         寫一個可以不用進docker就可以直接撈取音檔,音檔log和音檔時間註記。
+#         順便匯出客戶機sql及撈取upload file
 # History:
 #         20200222 jack first release
 #         copy.sh need to under /mnt/kaldi_models/
@@ -32,26 +33,22 @@ fi
 containerID=$1
 folderName=$2
 minute_=$3
-# 查看所有參數
 echo "containerID folderName minute_ : $@"
 
+today=$(date +\%Y\%m\%d)
 
 # zip folder
 value_=0
 echo "test copy.sh..."
-# -f(file) -d(dir)
-test -f /mnt/kaldi_models/copy.sh && value_=1 || echo "missing /mnt/kaldi_models/copy.sh"
+test -f /mnt/kaldi_models/copy.sh && value_=1 || echo "missing /mnt/kaldi_models/copy.sh file"
 
 if [ $value_ = 1 ]
 then
     echo "zipping...audio, sql and upload file"
-    docker exec -it $containerID /bin/bash -c "sh /opt/models/copy.sh $folderName $minute_" && \
-    zip -r -m /mnt/$folderName.zip /mnt/kaldi_models/$folderName/*
-    # -r(recursion) -m(壓縮完後刪除壓縮源)
+    docker exec -it $containerID /bin/bash -c "sh /opt/models/copy.sh $folderName $minute_" && zip -r -m /mnt/$folderName.zip /mnt/kaldi_models/$folderName/*
     rm -r /mnt/kaldi_models/$folderName/
-    zip -r /mnt/sql.zip /mnt/Kingcolon/server/sql/*
-    # -cf(打包) -xf(解包)
     tar -cf /mnt/upload.tar /mnt/Kingcolon/server/public/upload/*
-    echo "zip completed"
+    mysqldump -uroot -p src_ai > /mnt/src_ai_bk_$today.sql
+    echo "All processing completed"
     exit 0
 fi
